@@ -36,14 +36,14 @@ codes$materiales_electricos <- c(51433, 52363)
 codes$instrumentos_musicales <- c(51355, 52356)
 codes$electrodomesticos <- c(51354, 52355)
 codes$muebles <- c(51351, 51541, 51542, 52351, 52410)
-codes$autos <- c(50111, 50119, 50121, 50129)
-codes$motos <- c(50401)
+codes$autos <- c(50100)
+codes$motos <- c(50400)
 codes$bicicletas <- c(51393, 52394)
 
 ## Generamos lista de salida
 out_list <- map(codes,~RUS_df %>% 
                   filter(X5_DIG %in% .x) %>% 
-                  nrow())
+                 nrow())
 
 
 
