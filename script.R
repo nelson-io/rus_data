@@ -4,7 +4,8 @@
 library(tidyverse)
 library(rio)
 library(sf)
-
+library(tabulizer)
+library(janitor)
 ## Importamos datos
 
 ### Generamos temp file y descargamos el zip de los datos del RUS
@@ -17,9 +18,38 @@ unzip(temp,overwrite = T)
 
 RUS_df <- st_read("relevamiento-usos-suelo-2017.shp")
 
-## Identificamos casos de indumentaria
-Indumentaria <- RUS_df %>% 
-  filter(X4_DIG %in% c(5131, 5233))
+RUS_df$X4_DIG <- RUS_df$X4_DIG %>% as.character() %>% as.numeric()
+RUS_df$X5_DIG <- RUS_df$X5_DIG %>% as.character() %>% as.numeric()
 
-### separamos minorista de mayorista
-Indumentaria$X4_DIG %>% as.character() %>% as.numeric() %>% table()
+## Identificamos códigos de industrias de interés 
+codes <- list()
+codes$indumentaria <- c(51311:51315, 52331:52335,52339, 52341:52343)
+codes$gastronomia <- c(55202, 55203, 55204, 55211, 55221)
+codes$libreria <- c(51322, 52383, 52420, 51321, 52381)
+codes$florerias <- c(52391)
+codes$juguetes <- c(52393, 51392)
+codes$joyas_y_relojes <- c(52372, 51342)
+codes$bijouterie <- c(52373)
+codes$perfumeria <- c(52312)
+codes$decoracion <- c(52367)
+codes$materiales_electricos <- c(51433, 52363)
+codes$instrumentos_musicales <- c(51355, 52356)
+codes$electrodomesticos <- c(51354, 52355)
+codes$muebles <- c(51351, 51541, 51542, 52351, 52410)
+codes$autos <- c(50111, 50119, 50121, 50129)
+codes$motos <- c(50401)
+codes$bicicletas <- c(51393, 52394)
+
+## Generamos lista de salida
+out_list <- map(codes,~RUS_df %>% 
+                  filter(X5_DIG %in% .x) %>% 
+                  nrow())
+
+
+
+## Importamos datos del nomenclador
+# Clanae_04 <- extract_tables('https://www.indec.gob.ar/ftp/cuadros/menusuperior/clasificadores/clanae_2004_19.pdf')
+# 
+# tables_vect <- map_lgl(Clanae_04, ~ ncol(.) == 2) %>% which()
+# Clanae_04_df <- map_df(tables_vect, ~ pluck(Clanae_04, .) %>% data.frame() %>% set_names(c("code", "desc"))) %>% 
+#   filter(code != "")  #pulir método para próxima iteración
