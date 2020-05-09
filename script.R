@@ -29,9 +29,9 @@ codes$libreria <- c(51322, 52383, 52420, 51321, 52381)
 codes$florerias <- c(52391)
 codes$juguetes <- c(52393, 51392)
 codes$joyas_y_relojes <- c(52372, 51342)
-codes$bijouterie <- c(52373)
+# codes$bijouterie <- c(52373)
 codes$perfumeria <- c(52312)
-codes$decoracion <- c(52367)
+# codes$decoracion <- c(52367)
 codes$materiales_electricos <- c(51433, 52363)
 codes$instrumentos_musicales <- c(51355, 52356)
 codes$electrodomesticos <- c(51354, 52355)
@@ -44,6 +44,27 @@ codes$bicicletas <- c(51393, 52394)
 out_list <- map(codes,~RUS_df %>% 
                   filter(X5_DIG %in% .x) %>% 
                  nrow())
+
+
+#hacemos lista para armar el xlsx detallado
+RUS_extractor <- function(x){
+  RUS_df %>% 
+    st_drop_geometry() %>% 
+    filter(X5_DIG %in% x) %>% 
+    group_by(TIPO2_16) %>% 
+    summarise(total = n()) %>% 
+    adorn_totals()
+} 
+
+
+out_list_2 <- map(codes, RUS_extractor)
+
+
+#armamos el xlsx
+
+export(out_list_2, "rus_count.xlsx")
+
+
 
 
 
