@@ -16,14 +16,31 @@ download.file("http://cdn.buenosaires.gob.ar/datosabiertos/datasets/relevamiento
 
 unzip(temp,overwrite = T)
 
-RUS_df <- st_read("relevamiento-usos-suelo-2017.shp")
+RUS_df <- st_read("relevamiento-usos-suelo-2017.shp") %>% 
+  st_drop_geometry() %>% 
+  mutate_at(vars(contains("_DIG")), ~as.numeric(as.character(.))) 
 
-RUS_df$X4_DIG <- RUS_df$X4_DIG %>% as.character() %>% as.numeric()
-RUS_df$X5_DIG <- RUS_df$X5_DIG %>% as.character() %>% as.numeric()
+ 
 
 ## Identificamos códigos de industrias de interés 
 codes <- list()
-codes$indumentaria <- c(51311:51315, 52331:52335,52339, 52341:52343)
+codes$automobiles <- 501:505
+codes$alimentos_bebida_tabaco_mayorista <- 512
+codes$articulos_uso_domestico_mayorista <- 513
+codes$productos_intermedios_mayorista <- 514
+codes$equipo_maquinas_herramientas_mayorista <- 515
+codes$venta_por_menor_no_especializada <- 521
+codes$alimentos_bebida_tabaco_minorista <- 522
+codes$productos_nuevos_ncp_minorista <- 523
+codes$productos_usados_minorista <- 524
+codes$reparacion_minorista <- 526
+codes$restaurantes_expendio_comidas_bebidas <- 552
+codes$hoteleria <- 551
+
+
+
+
+codes$indumentaria <- c(51311:51315, 52331:52335,52339, 52341:52343, 52321)
 codes$gastronomia <- c(55202, 55203, 55204, 55211, 55221)
 codes$libreria <- c(51322, 52383, 52420, 51321, 52381)
 codes$florerias <- c(52391)
@@ -42,15 +59,14 @@ codes$bicicletas <- c(51393, 52394)
 
 ## Generamos lista de salida
 out_list <- map(codes,~RUS_df %>% 
-                  filter(X5_DIG %in% .x) %>% 
+                  filter(X3_DIG %in% .x) %>% 
                  nrow())
 
 
 #hacemos lista para armar el xlsx detallado
 RUS_extractor <- function(x){
   RUS_df %>% 
-    st_drop_geometry() %>% 
-    filter(X5_DIG %in% x) %>% 
+    filter(X3_DIG %in% x) %>% 
     group_by(TIPO2_16) %>% 
     summarise(total = n()) %>% 
     adorn_totals()
